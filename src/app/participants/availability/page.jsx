@@ -6,29 +6,37 @@ import React, { useState } from "react";
 import InputField from "@/components/InputField";
 import MultiSelectDropdown from "@/components/MultiSelectDropdown";
 import Button from "@/components/Button";
+import { participants } from "@/utils/slotUtils";
+import axios from "axios";
 
 const AvailabilityPage = () => {
   const [selectedParticipants, setSelectedParticipants] = useState([]);
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
   const [availableSlots, setAvailableSlots] = useState(null);
 
-  const handleParticipantChange = (e) => {
-    const value = e.target.value;
-    setSelectedParticipants((prev) =>
-      prev.includes(value)
-        ? prev.filter((item) => item !== value)
-        : [...prev, value]
-    );
-  };
 
-  const handleCheckSlots = () => {
-    // Simulated API response for demonstration
-    setAvailableSlots({
+  const handleCheckSlots = async() => {
+    
+    try {
+      const response = await axios.post('/api/availability', {
+        participant_ids: selectedParticipants,
+        date_range: dateRange,
+      });
+  
+      if (response.data.success) {
+        setAvailableSlots(response.data.availableSlots);
+      } else {
+        console.error('Error:', response.data.error);
+      }
+    } catch (err) {
+      console.error('API Error:', err.response?.data?.error || err.message);
+    }
+   /* setAvailableSlots({
       "11-10-24": ["09:30 - 10:00", "02:30 - 03:00", "04:30 - 05:00"],
       "12-10-24": ["10:30 - 11:00", "01:30 - 02:00", "03:30 - 04:00"],
       "13-10-24": ["11:30 - 12:00", "02:30 - 03:00", "03:30 - 04:00"],
       "14-10-24": ["09:30 - 10:00", "02:30 - 03:00", "04:30 - 05:00"],
-    });
+    });*/
   };
 
   return (
@@ -39,10 +47,10 @@ const AvailabilityPage = () => {
         </h1>
 
         <MultiSelectDropdown
-          label="Choose Participants"
-          options={["John", "David", "Christo", "Sam"]}
+          label="Select Participants"
+          participants={participants}
           selectedOptions={selectedParticipants}
-          onChange={handleParticipantChange}
+          onChange={setSelectedParticipants}
         />
 
         <InputField
@@ -65,21 +73,24 @@ const AvailabilityPage = () => {
       </div>
 
       {availableSlots ? (
-        <div className="mt-6 bg-[#f5f0e6] p-4 rounded-3xl max-w-fit mx-auto px-20 !my-20">
-          <h2 className="text-lg font-semibold text-center underline">
+        <div className="mt-6 bg-[#f5f0e6] p-4 rounded-3xl md:max-w-2xl lg:max-w-3xl mx-auto sm:px-6 md:px-10 lg:px-20 !my-20">
+          <h2 className="text-lg font-semibold text-center underline md:text-xl lg:text-2xl">
             Available Slots
           </h2>
           {Object.entries(availableSlots).map(([date, timeSlots]) => (
-            <div key={date} className="my-10 flex items-center justify-center gap-5 ">
-              <div className="text-sm">{date} :</div>
+            <div
+              key={date}
+              className="my-10 w-full flex flex-col md:flex-row items-start justify-start gap-5"
+            >
+              <div className="text-sm font-semibold mb-2 md:mb-0 flex">{date} :</div>
               <div className="flex flex-wrap gap-2">
                 {timeSlots.map((slot, index) => (
                   <span
                     key={index}
-                    className="bg-[#5f5fe1] text-white py-1 px-2 rounded-full text-xs flex justify-center items-center space-x-2"
+                    className="bg-[#5f5fe1] text-white py-1 px-2 rounded-full text-xs flex items-center space-x-2"
                   >
-                    <GoStopwatch style={{width:"15px",height:"15px"}}/>
-                    <p>{slot}</p>
+                    <GoStopwatch style={{ width: "15px", height: "15px" }} />
+                    <p className="truncate">{slot}</p>
                   </span>
                 ))}
               </div>
@@ -87,6 +98,8 @@ const AvailabilityPage = () => {
           ))}
         </div>
       ) : null}
+      
+    
     </div>
   );
 };

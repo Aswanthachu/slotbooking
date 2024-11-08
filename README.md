@@ -14,23 +14,32 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+After the dependencies are installed, you'll need to set up environment variables for Redis. Create a `.env` file in the root of the project and add the following:
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+```env
+REDIS_HOST=your_redis_host
+REDIS_PORT=your_redis_port
+REDIS_PASSWORD=your_redis_password ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Once the environment variables are set, you can seed local data into Redis by running the following command:
 
-## Learn More
+```bash
+npm run seedRedis
+```
 
-To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This command will populate your Redis instance with the required data. Ensure your Redis server is running before executing this.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+To run the project locally, use the following command to start the development server:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+bash
+Copy code
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+This will start the server at http://localhost:3000. You can now visit the URL in your browser to interact with the application.

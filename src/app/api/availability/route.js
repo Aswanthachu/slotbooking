@@ -1,43 +1,9 @@
 "use server";
+import connectToRedis from "@/lib/redis";
 import { NextResponse } from "next/server";
 
-// Local Participant and availability data
-const participants = {
-  1: { name: "Adam", threshold: 4 },
-  2: { name: "Bosco", threshold: 4 },
-  3: { name: "Catherine", threshold: 5 },
-};
 
-const participantAvailability = {
-  1: {
-    Monday: [
-      { start: "09:00", end: "11:00" },
-      { start: "14:00", end: "16:30" },
-    ],
-    Tuesday: [{ start: "09:00", end: "18:00" }],
-  },
-  2: {
-    Monday: [{ start: "09:00", end: "18:00" }],
-    Tuesday: [{ start: "09:00", end: "11:30" }],
-  },
-  3: {
-    Monday: [{ start: "09:00", end: "18:00" }],
-    Tuesday: [{ start: "09:00", end: "18:00" }],
-  },
-};
-
-const schedules = {
-  1: {
-    "28-10-2024": [
-      { start: "09:30", end: "10:30" },
-      { start: "15:00", end: "16:30" },
-    ],
-  },
-  2: {
-    "28-10-2024": [{ start: "13:00", end: "13:30" }],
-    "29-10-2024": [{ start: "09:00", end: "10:30" }],
-  },
-};
+const redis = await connectToRedis();
 
 // Utility function to reformat date from yyyy-mm-dd to dd-mm-yyyy
 const reformatDate = (dateStr) => {
@@ -75,12 +41,15 @@ const generate30MinSlots = (start, end) => {
 };
 
 // Function to check participant available slots
-const checkParticipantAvailableSlots = ({ participant_ids, date_range }) => {
+const checkParticipantAvailableSlots = ({ participant_ids, date_range,data }) => {
   const result = {};
+
+  const { participants, participantAvailability, schedules } = data;
+
+  
   const startDate = reformatDate(date_range.start); // Convert to dd-mm-yyyy format
   const endDate = reformatDate(date_range.end); // Convert to dd-mm-yyyy format
   const dateList = generateDateRange(startDate, endDate);
-  console.log("Generated Date Range:", dateList); // Debugging the date range
 
   // Loop through the dates and check for available slots
   dateList.forEach((date) => {
@@ -163,17 +132,34 @@ const parseDate = (dateStr) => {
   return date;
 };
 
+async function getDataFromRedis() {
+  const participants = await redis.get('participants');
+  const participantAvailability = await redis.get('participantAvailability');
+  const schedules = await redis.get('schedules');
+
+  return {
+    participants: JSON.parse(participants),
+    participantAvailability: JSON.parse(participantAvailability),
+    schedules: JSON.parse(schedules),
+  };
+}
+
+
 export async function POST(request) {
   try {
     const body = await request.json(); // Extract request body
     const { participant_ids, date_range } = body;
 
-    console.log("Received Data:", { participant_ids, date_range });
+    const data = await getDataFromRedis();
 
     const result = checkParticipantAvailableSlots({
       participant_ids,
       date_range,
+      data
     });
+
+    console.log(data);
+    
 
     return NextResponse.json({ success: true, availableSlots: result });
   } catch (error) {
@@ -184,3 +170,6 @@ export async function POST(request) {
     );
   }
 }
+
+
+

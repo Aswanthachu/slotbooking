@@ -4,18 +4,15 @@ const MultiSelectDropdown = ({ label, participants, selectedOptions, onChange })
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Toggle the dropdown visibility
   const toggleDropdown = () => setIsOpen((prev) => !prev);
 
-  // Handle option selection/deselection
   const handleOptionChange = (id) => {
     const updatedSelectedOptions = selectedOptions.includes(id)
-      ? selectedOptions.filter((optionId) => optionId !== id) // Remove if already selected
-      : [...selectedOptions, id]; // Add if not selected
-    onChange(updatedSelectedOptions); // Pass updated array of selected IDs
+      ? selectedOptions.filter((optionId) => optionId !== id)
+      : [...selectedOptions, id]; 
+    onChange(updatedSelectedOptions);
   };
 
-  // Close the dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -37,7 +34,7 @@ const MultiSelectDropdown = ({ label, participants, selectedOptions, onChange })
         <span className="text-gray-700">
           {selectedOptions.length > 0
             ? selectedOptions
-                .map((id) => participants[id].name) // Map selected IDs to participant names
+                .map((id) => participants[id].name)
                 .join(', ')
             : 'Choose Participants'}
         </span>
